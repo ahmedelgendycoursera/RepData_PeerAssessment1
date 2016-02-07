@@ -2,7 +2,9 @@
 title: "Reproducible Research Course Project 1"
 author: "A. Elgendy"
 date: "February 5, 2016"
-output: html_document
+output: 
+  html_document: 
+    keep_md: yes
 ---
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
@@ -73,7 +75,7 @@ meanStepsTakenPerInterval <- aggregate(steps ~ interval, data = data2, FUN = mea
 colnames(meanStepsTakenPerInterval)[2] <- "steps.Mean"
 plot(x = meanStepsTakenPerInterval$interval, y = meanStepsTakenPerInterval$steps.Mean , type = "l", xlab = "Interval", ylab = "Steps Mean Per Interval", col = "green", main = "Before-Imputation Data")
 displayTable2 <- meanStepsTakenPerInterval[meanStepsTakenPerInterval$steps.Mean==max(meanStepsTakenPerInterval$steps.Mean,na.rm = TRUE),]
-print(displayTable, type = "html")
+print(displayTable2, type = "html")
 ```
 
 ###Chunk 4: Imputing Missing Values and Activity Pattern
