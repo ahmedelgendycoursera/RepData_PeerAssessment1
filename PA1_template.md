@@ -1,0 +1,125 @@
+---
+title: "Reproducible Research Course Project 1"
+author: "A. Elgendy"
+date: "February 5, 2016"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk.
+
+##Description of Document
+
+###Introduction:
+  This document contains literate statistical programming for data about personal movement using activity monitoring devices such as a Fitbit, Nike Fuelband, or Jawbone Up. These type of devices are part of the "quantified self" movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. But these data remain under-utilized both because the raw data are hard to obtain and there is a lack of statistical methods and software for processing and interpreting the data. This document makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
+
+###Study:
+In the literate statistical programming below, the author answers three questions:
+1. What is mean total number of steps taken per day?
+2. What is the average daily activity pattern?
+3. What is the impact of imputing missing values on the activity pattern?
+4. Are there differences in activity patterns between weekdays and weekends?
+
+
+##Description of Code
+
+###Note about the code included: 
+The code assumes that the loaded libraries used in the programming have been installed on the machine running the code. The loaded libraries are as follows:
+-xtable
+-Amelia
+-chron
+
+###Chunk 1: Loading and Processing Data
+1. Load the data (i.e. read.csv()).
+2. Process/transform the data (if necessary) into a format suitable for your analysis.
+
+``` {r, Loading and Processing Data, echo = TRUE, cache = TRUE, results = "asis"}
+
+data1 <- read.csv(file = "activity.csv")
+
+data2 <- data1
+data2$interval <- as.factor(data1$interval)
+data2$date <- as.Date(data1$date)
+```
+
+###Chunk 2: Number of Steps Taken Everyday by Date
+1. Calculate the total number of steps taken per day.
+3. Make a histogram of the total number of steps taken each day.
+2. Calculate and report the mean and median of the total number of steps taken per day.
+
+``` {r, Number of Steps Taken Everyday by Day, echo = TRUE, cache = TRUE, results = "asis"}
+stepsTakenPerDay <- aggregate(steps ~ date, data = data2, FUN = sum)
+stepsTakenPerDay$date <- as.Date(stepsTakenPerDay$date)
+library(xtable)
+displayTable <- xtable(stepsTakenPerDay)
+print(displayTable, type = "html")
+plot(x = stepsTakenPerDay$date, y = stepsTakenPerDay$steps , type = "h", xlab = "Date", ylab = "Steps Per Day", lwd = 15, col = "green")
+meanStepsTakenPerDay <- aggregate(steps ~ date, data = data2, FUN = mean)
+colnames(meanStepsTakenPerDay)[2] <- "steps.Mean"
+meanStepsTakenPerDayTable <- xtable((meanStepsTakenPerDay))
+print(meanStepsTakenPerDayTable, type = "html")
+medianStepsTakenPerDay <- aggregate(steps ~ date, data = data2, FUN = median)
+colnames(medianStepsTakenPerDay)[2] <- "steps.Median"
+medianStepsTakenPerDayTable <- xtable((medianStepsTakenPerDay))
+print(medianStepsTakenPerDayTable, type = "html")
+```
+
+###Chunk 3: Average Daily Activity Pattern
+1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis).
+2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+``` {r, Average Daily Activity Pattern, echo = TRUE, cache = TRUE, results = "asis"}
+meanStepsTakenPerInterval <- aggregate(steps ~ interval, data = data2, FUN = mean)
+colnames(meanStepsTakenPerInterval)[2] <- "steps.Mean"
+plot(x = meanStepsTakenPerInterval$interval, y = meanStepsTakenPerInterval$steps.Mean , type = "l", xlab = "Interval", ylab = "Steps Mean Per Interval", col = "green", main = "Before-Imputation Data")
+displayTable2 <- meanStepsTakenPerInterval[meanStepsTakenPerInterval$steps.Mean==max(meanStepsTakenPerInterval$steps.Mean,na.rm = TRUE),]
+print(displayTable, type = "html")
+```
+
+###Chunk 4: Imputing Missing Values and Activity Pattern
+1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+2. Predictive strategy for filling in all of the missing values in the dataset. Create a new dataset that is equal to the original dataset but with the missing data filled in.
+3. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day.
+
+``` {r, Imputing Missing Values and Activity Pattern, echo = TRUE, cache = TRUE, results = "asis"}
+missingValues <- sum(complete.cases(data2))
+missingValuesTable <- xtable(table(missingValues))
+print(missingValuesTable)
+library(Amelia)
+imputedData2List <- amelia(data2, m = 3, ords = "steps", noms = "interval")
+imputedData2 <- imputedData2List$imputations[[1]]
+sum(is.na(imputedData2$imputations[[1]]$steps))
+stepsTakenPerDayAfterImputation <- aggregate(steps ~ date, data = imputedData2, FUN = sum)
+plot(x = stepsTakenPerDayAfterImputation$date, y = stepsTakenPerDayAfterImputation$steps , type = "h", xlab = "Date", ylab = "Steps Per Day", lwd = 15, col = "red", main = "Imputed Data")
+meanStepsTakenPerDayAfterImputation <- aggregate(steps ~ date, data = data2, FUN = mean)
+colnames(meanStepsTakenPerDayAfterImputation)[2] <- "steps.Mean"
+medianStepsTakenPerDayAfterImputation <- aggregate(steps ~ date, data = imputedData2, FUN = median)
+colnames(medianStepsTakenPerDayAfterImputation)[2] <- "steps.Median"
+displayTable3 <- xtable(meanStepsTakenPerDayAfterImputation)
+displayTable4 <- xtable(medianStepsTakenPerDayAfterImputation)
+print(displayTable3, type="html")
+print(displayTable4, type="html")
+
+summary(stepsTakenPerDay$steps)
+sd(stepsTakenPerDay$steps)
+summary(stepsTakenPerDayAfterImputation$steps)
+sd(stepsTakenPerDayAfterImputation$steps)
+```
+
+###Chunk 5:The Differences in Activity Patterns Between Weekdays and Weekends
+1. Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
+2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
+
+``` {r, The Differences in Activity Patterns Between Weekdays and Weekends, echo = TRUE, cache = TRUE, results = "asis"}
+library(chron)
+imputedData3 <- imputedData2
+imputedData3$type.of.day <- as.factor(ifelse(is.weekend(imputedData3$date),"weekend","weekday"))
+par(mfrow=c(2,1))
+stepsTakenPerIntervalWeekday <- aggregate(steps ~ interval, data = imputedData3[imputedData3$type.of.day=="weekday",], FUN = mean)
+plot(x = stepsTakenPerIntervalWeekday$interval, y = stepsTakenPerIntervalWeekday$steps , type = "l", xlab = "Interval", ylab = "Average Steps Per Interval", lwd = 15, col = "green", main = "Average Steps Per Interval - Weekday")
+stepsTakenPerIntervalWeekend <- aggregate(steps ~ interval, data = imputedData3[imputedData3$type.of.day=="weekend",], FUN = mean)
+plot(x = stepsTakenPerIntervalWeekend$interval, y = stepsTakenPerIntervalWeekend$steps , type = "l", xlab = "Interval", ylab = "Average Steps Per Interval", lwd = 15, col = "red", main = "Average Steps Per Interval - Weekend")
+```
+
+
+
