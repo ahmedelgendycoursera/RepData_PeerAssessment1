@@ -43,7 +43,7 @@ data2$interval <- as.factor(data1$interval)
 data2$date <- as.Date(data1$date)
 ```
 
-###Chunk 2: Number of Steps Taken Everyday by Day
+###Chunk 2: Number of Steps Taken Everyday by Date
 1. Calculate the total number of steps taken per day.
 3. Make a histogram of the total number of steps taken each day.
 2. Calculate and report the mean and median of the total number of steps taken per day.
